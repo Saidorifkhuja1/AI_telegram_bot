@@ -1,9 +1,10 @@
 import logging
 import aiohttp
+import ssl
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils import executor
-from config import BOT_TOKEN, API, API1, API2  # Import API keys and bot token from config
+from config import BOT_TOKEN, API, API1, API2 
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -37,8 +38,13 @@ async def get_ai_response(api_key, user_message):
     }
 
     try:
+        # Create an SSL context with certificate verification disabled
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=payload, headers=headers) as response:
+            async with session.post(url, json=payload, headers=headers, ssl=ssl_context) as response:
                 if response.status == 200:
                     return await response.json()
                 else:
